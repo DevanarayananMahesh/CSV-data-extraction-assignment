@@ -40,6 +40,26 @@ def summarize_sensor_data(readings_params):
 
 
 
+is_valid_min_threshold = False
+
+while not is_valid_min_threshold:
+    user_min_threshold = input("Decide the Minimum Threshold for the data to be valid: ")
+    try:
+        testNumMin = float(user_min_threshold)
+        is_valid_min_threshold = True 
+    except ValueError:
+        print("That is not a valid number. Try again.")
+
+is_valid_max_threshold = False
+
+while not is_valid_max_threshold:
+    user_max_threshold = input("Decide the Maximum Threshold for the data to be valid: ")
+    try:
+        testNumMax = float(user_max_threshold)
+        is_valid_max_threshold = True 
+    except ValueError:
+        print("That is not a valid number. Try again.")
+
 
 
 
@@ -47,17 +67,16 @@ def summarize_sensor_data(readings_params):
 with open('Robot_Sensor_Readings_1000.csv', 'r') as file:
     
     csv_reader = csv.DictReader(file)
-
     for row in csv_reader:
 
         current_reading = float(row["distance_cm"]) 
         readings.append(current_reading)
         
-        if current_reading < 20:
+        if current_reading < testNumMin:
             unusual_specifics("under")
             # print(row["reading_id"])
 
-        elif current_reading > 60:
+        elif current_reading > testNumMax:
             unusual_specifics("over")
             # print(row["reading_id"])
     
@@ -69,10 +88,10 @@ Total Readings: {num}
 Minimum Reading: {min_r}
 Maximum Reading: {max_r}
 Average Reading: {avg}
-Readings under 20: {under_20}
-Readings over 60: {over_60}
+Readings under {testNumMin}: {under_20}
+Readings over {testNumMax}: {over_60}
 Unusual Readings: {unusual}
-Unusual Readings Percentage: {pct}
+Unusual Readings Percentage: {pct}%
 """)
    
 
