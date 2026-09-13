@@ -4,6 +4,9 @@ readings = []
 unusual_readings = 0
 under_20 = 0
 over_60 = 0
+Stop_count = 0
+MoveSlow_count = 0
+MoveForward_count = 0
 percentage_u_readings = 0
 
 
@@ -37,6 +40,19 @@ def summarize_sensor_data(readings_params):
         print("No data found in the CSV file.")
         return 0, 0, 0, 0, 0, 0, 0, 0
         
+
+
+
+def robot_decision(distance):
+    global Stop_count, MoveSlow_count, MoveForward_count
+    for value in distance:
+        if value < 20:
+            Stop_count += 1
+        elif value > 50:
+            MoveForward_count += 1
+        else:
+            MoveSlow_count += 1
+
 
 
 
@@ -81,7 +97,7 @@ with open('Robot_Sensor_Readings_1000.csv', 'r') as file:
             # print(row["reading_id"])
     
 num, min_r, max_r, avg, under_20, over_60, unusual, pct = summarize_sensor_data(readings)
-
+robot_decision(readings)
 
 print(f"""
 Total Readings: {num}
@@ -92,6 +108,10 @@ Readings under {testNumMin}: {under_20}
 Readings over {testNumMax}: {over_60}
 Unusual Readings: {unusual}
 Unusual Readings Percentage: {pct}%
+
+STOP: {Stop_count}
+MOVE SLOWLY: {MoveSlow_count}
+MOVE FORWARD: {MoveForward_count}
 """)
    
 
