@@ -1,2 +1,3 @@
 # CSV data extraction assignment
 
+This is a project that shows a glimpse of ML requirements such as Data gathering, Data preprocessing, collecting information on the data for analysis, and more. There are 2 python files, one that has the final product, and one used for testing the fundamental program on different datasets. There are a total of 5 datasets, with 4 being testing sets each with different lengths.

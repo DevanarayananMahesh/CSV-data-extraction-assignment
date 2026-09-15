@@ -14,7 +14,7 @@ Stop_count = 0
 MoveSlow_count = 0
 MoveForward_count = 0
 percentage_u_readings = 0
-
+previous_dataPoint = 0
 
 
 #=============================
@@ -42,10 +42,10 @@ def summarize_sensor_data(readings_params):
     if readings_params:
         percentage_u_readings = percentage()
 
-        num_readings = len(readings)
-        min_readings = min(readings)
-        max_readings = max(readings)
-        avg_readings = sum(readings)/len(readings)
+        num_readings = len(readings_params)
+        min_readings = min(readings_params)
+        max_readings = max(readings_params)
+        avg_readings = sum(readings_params)/len(readings_params)
 
         return num_readings, min_readings, max_readings, avg_readings, under_20, over_60, unusual_readings, percentage_u_readings
     else:
@@ -72,6 +72,8 @@ def robot_decision(distance):
 #=======================================
 
 # IS COMMENTED OUT AS IT WAS FOR LEVEL 3 AND LEVEL 4 REQUIRES AUTOMATED RULES TO ISOLATE INVALID DATA POINTS
+# THIS BASICALLY ASKS THE USER FOR THRESHOLDS AND ENSURES THEY ARE NUMBERS
+
 
 # is_valid_min_threshold = False
 
@@ -105,9 +107,9 @@ with open('Robot_Sensor_Readings_1000.csv', 'r') as file:
     csv_reader = csv.DictReader(file)
 
     for row in csv_reader:
-
-        current_reading = float(row["distance_cm"]) 
-        readings.append(current_reading)
+        
+        current_reading = float(row["distance_cm"]) #converts to float
+        readings.append(current_reading) #appends the converted value to list
 
 
 
@@ -115,6 +117,14 @@ with open('Robot_Sensor_Readings_1000.csv', 'r') as file:
 #==============================================
 #  DETERMINING THRESHOLD AUTOMATICALLY                    
 #==============================================
+current_streak = 0
+longest_streak = 0
+
+current_start = 0
+longest_start = 0
+longest_end = 0
+
+# Determining IQR to auto-decide the min and max thresholds
 
 readingsQ1, readingsQ3 = np.percentile(readings, [25, 75])  
 iqr = readingsQ3 - readingsQ1
@@ -124,14 +134,29 @@ UpperFence = readingsQ3 + (1.5 * iqr)
 
 
 
-for reading in readings:
-    if reading < LowerFence:
-        unusual_specifics("under")
-        # print(row["reading_id"])
+for i, reading in enumerate(readings):
+
+    if reading < LowerFence or reading > UpperFence:
+        if reading < LowerFence:
+            unusual_specifics("under")
+        else:
+            unusual_specifics("over")
         
-    elif reading > UpperFence:
-        unusual_specifics("over")
-        # print(row["reading_id"])
+        current_streak += 1
+
+        # beginning of new streak
+        if current_streak == 1:
+            current_start = i
+
+        # Deciding whether its longest streak
+        if current_streak > longest_streak:
+            longest_streak = current_streak
+            longest_start = current_start
+            longest_end = i
+
+    else:
+        # streak is broken
+        current_streak = 0
     
 
 
@@ -153,6 +178,9 @@ Readings under {LowerFence:.2f}: {under_20}
 Readings over {UpperFence:.2f}: {over_60}
 Unusual Readings: {unusual}
 Unusual Readings Percentage: {pct:.2f}%
+Longest Unusual Streak: {longest_streak}
+Longest Streak Begins: Reading #{longest_start + 1}
+Longest Streak Ends: Reading #{longest_end + 1}
 
 STOP: {Stop_count}
 MOVE SLOWLY: {MoveSlow_count}
